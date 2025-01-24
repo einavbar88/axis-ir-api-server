@@ -10,9 +10,11 @@
     "outDir": "dist",
     "importsNotUsedAsValues": "remove",
     "strict": true,
+    "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
     "types": ["vitest/globals"]
   },
   "include": ["src/**/*"],

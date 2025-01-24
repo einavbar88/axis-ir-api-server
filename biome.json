@@ -1,24 +1,119 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "formatter": {
-    "indentStyle": "space",
-    "lineWidth": 120
+  "organizeImports": {
+    "enabled": false
   },
-  "organizeImports": { "enabled": true },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "ignore": [],
+    "attributePosition": "auto",
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "jsxRuntime": "reactClassic",
+    "formatter": {
+      "arrowParentheses": "always",
+      "bracketSameLine": false,
+      "bracketSpacing": true,
+      "jsxQuoteStyle": "single",
+      "quoteStyle": "single",
+      "quoteProperties": "asNeeded",
+      "semicolons": "always",
+      "trailingCommas": "all"
+    }
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "ignore": [
+      "generated.ts",
+      "**/generated/*",
+      "**/dist/*",
+      "**/build/*",
+      "node_modules/**/*"
+    ]
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "suspicious": {
-        "noExplicitAny": "off",
-        "noConfusingVoidType": "off"
+      "correctness": {
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "safe"
+        },
+        "useExhaustiveDependencies": {
+          "level": "off",
+          "options": {}
+        },
+        "noInvalidUseBeforeDeclaration": {
+          "level": "off"
+        }
       },
       "style": {
-        "noUselessElse": "off",
-        "noNonNullAssertion": "off"
+        "useSelfClosingElements": {
+          "level": "off"
+        },
+        "noUselessElse": {
+          "level": "off"
+        },
+        "useTemplate": {
+          "level": "off"
+        },
+        "noUnusedTemplateLiteral": {
+          "level": "off"
+        }
+      },
+      "a11y": {
+        "useValidAnchor": {
+          "level": "off"
+        },
+        "useKeyWithClickEvents": {
+          "level": "off"
+        },
+        "useAltText": {
+          "level": "off"
+        },
+        "noBlankTarget": {
+          "level": "off",
+          "options": {}
+        },
+        "useMediaCaption": {
+          "level": "off"
+        },
+        "useIframeTitle": {
+          "level": "off"
+        }
       },
       "complexity": {
-        "noForEach": "off"
+        "noForEach": {
+          "level": "off"
+        },
+        "useArrowFunction": {
+          "level": "off"
+        }
+      },
+      "suspicious": {
+        "noDoubleEquals": {
+          "level": "off",
+          "options": {}
+        },
+        "noAssignInExpressions": {
+          "level": "off"
+        },
+        "noExplicitAny": {
+          "level": "off"
+        },
+        "noArrayIndexKey": {
+          "level": "off"
+        }
       }
     }
   }
