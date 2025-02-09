@@ -21,6 +21,7 @@ import { IncidentAssign } from '@/entities/IncidentAssign';
 import { Task } from '@/entities/Task';
 import { TaskAssign } from '@/entities/TaskAssign';
 import { Log } from '@/entities/Log';
+import { TokenWhitelist } from '@/entities/TokenWhitelist';
 
 let repository: DataSource;
 
@@ -49,6 +50,7 @@ const initialize = async () => {
       Comment,
       Log,
       Report,
+      TokenWhitelist,
     ],
   };
   await createDatabase({ options });

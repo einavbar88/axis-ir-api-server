@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
@@ -35,8 +36,12 @@ export class Comment {
   @Column('varchar', { name: 'content', length: 200 })
   content: string;
 
-  @Column('datetime', { name: 'created_at', nullable: true })
-  createdAt: Date | null;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date;
 
   @Column('datetime', { name: 'edited_at', nullable: true })
   editedAt: Date | null;

@@ -1,9 +1,11 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Asset } from './Asset';
 import { AssetGroup } from './AssetGroup';
@@ -41,11 +43,20 @@ export class Company {
   @Column('varchar', { name: 'description', nullable: true, length: 255 })
   description: string | null;
 
-  @Column('datetime', { name: 'created_at', nullable: true })
-  createdAt: Date | null;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  created_at: Date;
 
-  @Column('datetime', { name: 'updated_at', nullable: true })
-  updatedAt: Date | null;
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 
   @OneToMany(
     () => Asset,

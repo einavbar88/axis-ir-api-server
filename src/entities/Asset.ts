@@ -1,11 +1,13 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { AssetGroup } from './AssetGroup';
 import { Company } from './Company';
@@ -52,11 +54,20 @@ export class Asset {
   @Column('datetime', { name: 'last_heartbeat', nullable: true })
   lastHeartbeat: Date | null;
 
-  @Column('datetime', { name: 'created_at', nullable: true })
-  createdAt: Date | null;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  created_at: Date;
 
-  @Column('datetime', { name: 'updated_at', nullable: true })
-  updatedAt: Date | null;
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 
   @ManyToOne(
     () => AssetGroup,

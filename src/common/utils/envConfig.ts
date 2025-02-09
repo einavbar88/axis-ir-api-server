@@ -18,4 +18,5 @@ export const env = cleanEnv(process.env, {
   DB_USER: str({ devDefault: testOnly('root') }),
   DB_PASSWORD: str({ devDefault: testOnly('') }),
   DB_NAME: str({ devDefault: testOnly('AxisIR-DB') }),
+  JWT_SECRET: str({ devDefault: testOnly('AxisIR-JWT') }),
 });

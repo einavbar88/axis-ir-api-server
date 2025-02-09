@@ -1,6 +1,6 @@
 import { IsInt, IsOptional, IsString } from 'class-validator';
 
-export class CreateReportDto {
+export class CreateUserDto {
   @IsInt()
   company_id!: number;
 

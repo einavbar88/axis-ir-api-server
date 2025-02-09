@@ -1,10 +1,12 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './User';
 
@@ -26,8 +28,20 @@ export class Log {
   @Column('varchar', { name: 'details', nullable: true, length: 255 })
   details: string | null;
 
-  @Column('datetime', { name: 'timestamp', nullable: true })
+  @CreateDateColumn({
+    name: 'timestamp',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   timestamp: Date | null;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 
   @ManyToOne(
     () => User,

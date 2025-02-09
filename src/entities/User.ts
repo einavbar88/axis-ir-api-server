@@ -1,11 +1,11 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Comment } from './Comment';
 import { IncidentAssign } from './IncidentAssign';
@@ -13,11 +13,9 @@ import { Indicator } from './Indicator';
 import { Log } from './Log';
 import { Report } from './Report';
 import { TaskAssign } from './TaskAssign';
-import { UserRole } from './UserRole';
 
 @Index('username', ['username'], { unique: true })
 @Index('email', ['email'], { unique: true })
-@Index('role_id', ['roleId'], {})
 @Entity('user', { schema: 'AxisIR-DB' })
 export class User {
   @PrimaryGeneratedColumn({ type: 'int', name: 'user_id' })
@@ -32,17 +30,23 @@ export class User {
   @Column('varchar', { name: 'password', length: 64 })
   password: string;
 
-  @Column('int', { name: 'role_id', nullable: true })
-  roleId: number | null;
-
   @Column('tinyint', { name: 'is_active', nullable: true, width: 1 })
   isActive: boolean | null;
 
-  @Column('datetime', { name: 'created_at', nullable: true })
-  createdAt: Date | null;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  created_at: Date;
 
-  @Column('datetime', { name: 'updated_at', nullable: true })
-  updatedAt: Date | null;
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 
   @Column('varchar', { name: 'first_name', nullable: true, length: 30 })
   firstName: string | null;
@@ -94,15 +98,4 @@ export class User {
     (taskAssign) => taskAssign.user,
   )
   taskAssigns: TaskAssign[];
-
-  @ManyToOne(
-    () => UserRole,
-    (userRole) => userRole.users,
-    {
-      onDelete: 'RESTRICT',
-      onUpdate: 'RESTRICT',
-    },
-  )
-  @JoinColumn([{ name: 'role_id', referencedColumnName: 'roleId' }])
-  role: UserRole;
 }
