@@ -47,7 +47,7 @@ class UserController {
   };
 
   public revokeToken: RequestHandler = async (req: Request, res: Response) => {
-    const serviceResponse = await userService.revokeToken(req.body);
+    const serviceResponse = await userService.revokeToken(req.body.token);
     return handleServiceResponse(serviceResponse, res);
   };
 }

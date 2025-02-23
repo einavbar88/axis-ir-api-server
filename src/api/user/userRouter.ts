@@ -9,7 +9,7 @@ userRouter.post('/login', userController.login);
 
 userRouter.post('/tokenLogin', userController.tokenLogin);
 
-userRouter.post('/revoke', userController.revokeToken);
+userRouter.post('/logout', userController.revokeToken);
 
 userRouter.post('/signup', userController.signup);
 

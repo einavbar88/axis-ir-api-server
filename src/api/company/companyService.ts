@@ -50,10 +50,10 @@ export class CompanyService {
     }
   }
 
-  async findByCin(cin: string): Promise<ServiceResponse<Company | null>> {
+  async findById(id: number): Promise<ServiceResponse<Company | null>> {
     try {
       const company = await this.companyRepository.findOne({
-        where: { cin },
+        where: { companyId: id },
       });
       if (!company) {
         return ServiceResponse.failure(
@@ -64,7 +64,7 @@ export class CompanyService {
       }
       return ServiceResponse.success<Company>('Company found', company);
     } catch (ex) {
-      const errorMessage = `Error finding Company with cin ${cin}:, ${(ex as Error).message}`;
+      const errorMessage = `Error finding Company with id ${id}:, ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
         'An error occurred while finding Company.',

@@ -18,4 +18,10 @@ companyRouter.post(
   companyController.assignUserRoleToCompany,
 );
 
+companyRouter.get(
+  '/getById/:id',
+  authMiddleware,
+  companyController.getCompanyById,
+);
+
 companyRouter.post('/create', authMiddleware, companyController.createCompany);

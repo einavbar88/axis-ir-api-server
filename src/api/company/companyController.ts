@@ -22,12 +22,13 @@ class CompanyController {
     return handleServiceResponse(serviceResponse, res);
   };
 
-  public getCompanyByCin: RequestHandler = async (
+  public getCompanyById: RequestHandler = async (
     req: Request,
     res: Response,
   ) => {
-    const cin = req.params.cin;
-    const serviceResponse = await companyService.findByCin(cin);
+    const id = req.params.id;
+    console.log(id);
+    const serviceResponse = await companyService.findById(Number(id));
     return handleServiceResponse(serviceResponse, res);
   };
 
@@ -38,6 +39,7 @@ class CompanyController {
     const user = req.user as User;
     const { companyId, email, roleId } = req.body;
     const serviceResponse = await companyService.assignUserRoleToCompany(
+      user.userId,
       companyId,
       email,
       roleId,

@@ -116,7 +116,7 @@ export class UserService {
         userId: user.userId,
         username: user.username,
       });
-      await this.tokenWhitelistRepository.save({ token, user_id: user.userId });
+      await this.tokenWhitelistRepository.save({ token, userId: user.userId });
       return ServiceResponse.success<{ user: PartialUser; token: string }>(
         'User found',
         {
@@ -142,9 +142,13 @@ export class UserService {
     token: string,
   ): Promise<ServiceResponse<PartialUser | null>> {
     try {
+      console.log(token);
+
       const tokenWhitelist = await this.tokenWhitelistRepository.findOne({
         where: { token },
       });
+      console.log(tokenWhitelist);
+
       if (!tokenWhitelist) {
         return ServiceResponse.failure(
           'Invalid token',
@@ -177,12 +181,15 @@ export class UserService {
 
   async revokeToken(token: string): Promise<ServiceResponse<string | null>> {
     try {
-      await this.tokenWhitelistRepository.delete({ token });
+      const toDelete = await this.tokenWhitelistRepository.findOne({
+        where: { token },
+      });
+      if (toDelete) await this.tokenWhitelistRepository.delete(toDelete.id);
       return ServiceResponse.success<string>('Token revoked', 'Token revoked');
     } catch (ex) {
       const errorMessage = `Error revoking token: ${(ex as Error).message}`;
       logger.error(errorMessage);
-      return ServiceResponse.failure(
+      return ServiceResponse.success(
         'An error occurred while revoking token.',
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
