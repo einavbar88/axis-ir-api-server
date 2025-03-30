@@ -9,6 +9,7 @@ import requestLogger from '@/common/middleware/requestLogger';
 import { reportRouter } from '@/api/report/reportRouter';
 import { companyRouter } from '@/api/company/companyRouter';
 import { userRouter } from '@/api/user/userRouter';
+import { assetRouter } from '@/api/assets/assetRouter';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -30,6 +31,7 @@ app.use(requestLogger);
 app.use('/users', userRouter);
 app.use('/reports', reportRouter);
 app.use('/accounts', companyRouter);
+app.use('/assets', assetRouter);
 
 // Error handlers
 app.use(errorHandler());
