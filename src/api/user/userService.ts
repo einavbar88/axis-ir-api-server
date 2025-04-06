@@ -2,20 +2,23 @@ import type { Repository } from 'typeorm';
 import { StatusCodes } from 'http-status-codes';
 import bcrypt from 'bcrypt';
 import { User } from '@/entities/User';
+import { UserRole } from '@/entities/UserRole';
 import { ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 import { getRepository } from '@/common/models/repository';
 import { generateToken } from '@/common/utils/jwt';
 import { TokenWhitelist } from '@/entities/TokenWhitelist';
 
-type PartialUser = Partial<User>;
+type PartialUser = Partial<User> & { roles?: UserRole[] };
 
 export class UserService {
   private userRepository!: Repository<User>;
+  private userRoleRepository!: Repository<UserRole>;
   private tokenWhitelistRepository!: Repository<TokenWhitelist>;
 
   async init() {
     this.userRepository = await getRepository(User);
+    this.userRoleRepository = await getRepository(UserRole);
     this.tokenWhitelistRepository = await getRepository(TokenWhitelist);
   }
 
@@ -112,6 +115,10 @@ export class UserService {
           StatusCodes.UNAUTHORIZED,
         );
       }
+      const userRoles = await this.userRoleRepository.find({
+        where: { userId: user.userId },
+      });
+
       const token = generateToken({
         userId: user.userId,
         username: user.username,
@@ -123,6 +130,7 @@ export class UserService {
           user: {
             userId: user.userId,
             username: user.username,
+            roles: userRoles,
           },
           token,
         },
@@ -142,13 +150,9 @@ export class UserService {
     token: string,
   ): Promise<ServiceResponse<PartialUser | null>> {
     try {
-      console.log(token);
-
       const tokenWhitelist = await this.tokenWhitelistRepository.findOne({
         where: { token },
       });
-      console.log(tokenWhitelist);
-
       if (!tokenWhitelist) {
         return ServiceResponse.failure(
           'Invalid token',
@@ -159,6 +163,7 @@ export class UserService {
       const user = await this.userRepository.findOne({
         where: { userId: tokenWhitelist.userId },
       });
+
       if (!user) {
         return ServiceResponse.failure(
           'User not found',
@@ -166,9 +171,14 @@ export class UserService {
           StatusCodes.NOT_FOUND,
         );
       }
+      const userRoles = await this.userRoleRepository.find({
+        where: { userId: user.userId },
+      });
+      console.log(userRoles);
       return ServiceResponse.success('User found', {
         userId: user.userId,
         username: user.username,
+        roles: userRoles,
       });
     } catch (e) {
       return ServiceResponse.failure(

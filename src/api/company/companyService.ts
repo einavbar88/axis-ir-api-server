@@ -144,7 +144,6 @@ export class CompanyService {
       const newCompany = await this.companyRepository.save(company);
       const { companyId, name } = newCompany;
       const roleId = Roles.ADMIN;
-      console.log({ companyId, userId, roleId });
       await this.userRoleRepository.save({ companyId, userId, roleId });
       return ServiceResponse.success<Partial<Company>>('Company created', {
         companyId,
