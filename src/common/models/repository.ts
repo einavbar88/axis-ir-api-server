@@ -22,6 +22,8 @@ import { Task } from '@/entities/Task';
 import { TaskAssign } from '@/entities/TaskAssign';
 import { Log } from '@/entities/Log';
 import { TokenWhitelist } from '@/entities/TokenWhitelist';
+import { Role } from '@/entities/Role';
+import { InvitedUser } from '@/entities/InvitedUser';
 
 let repository: DataSource;
 
@@ -36,21 +38,23 @@ const initialize = async () => {
     logging: true,
     migrations: ['./migrations/*.ts'],
     entities: [
-      UserRole,
-      User,
+      Asset,
+      AssetGroup,
+      Comment,
       Company,
       Contact,
-      AssetGroup,
-      Asset,
-      Indicator,
       Incident,
       IncidentAssign,
-      Task,
-      TaskAssign,
-      Comment,
+      Indicator,
+      InvitedUser,
       Log,
       Report,
+      Role,
+      Task,
+      TaskAssign,
       TokenWhitelist,
+      User,
+      UserRole,
     ],
   };
   await createDatabase({ options });

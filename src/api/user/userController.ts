@@ -50,6 +50,22 @@ class UserController {
     const serviceResponse = await userService.revokeToken(req.body.token);
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public getRoles: RequestHandler = async (req: Request, res: Response) => {
+    const serviceResponse = await userService.getRoles();
+    return handleServiceResponse(serviceResponse, res);
+  };
+
+  public inviteUser: RequestHandler = async (req: Request, res: Response) => {
+    const { email, role } = req.body;
+    const { companyId } = req.params;
+    const serviceResponse = await userService.inviteUser(
+      email,
+      role,
+      Number(companyId),
+    );
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const userController = new UserController();

@@ -8,17 +8,24 @@ import { logger } from '@/server';
 import { getRepository } from '@/common/models/repository';
 import { generateToken } from '@/common/utils/jwt';
 import { TokenWhitelist } from '@/entities/TokenWhitelist';
+import { Role } from '@/entities/Role';
+import { InvitedUser } from '@/entities/InvitedUser';
 
 type PartialUser = Partial<User> & { roles?: UserRole[] };
+type RoleValue = { label: string; value: number };
 
 export class UserService {
   private userRepository!: Repository<User>;
+  private roleRepository!: Repository<Role>;
   private userRoleRepository!: Repository<UserRole>;
+  private invitedUserRoleRepository!: Repository<InvitedUser>;
   private tokenWhitelistRepository!: Repository<TokenWhitelist>;
 
   async init() {
     this.userRepository = await getRepository(User);
     this.userRoleRepository = await getRepository(UserRole);
+    this.invitedUserRoleRepository = await getRepository(InvitedUser);
+    this.roleRepository = await getRepository(Role);
     this.tokenWhitelistRepository = await getRepository(TokenWhitelist);
   }
 
@@ -52,6 +59,7 @@ export class UserService {
     try {
       const password = bcrypt.hashSync(user.password, 10);
       const newUser = await this.userRepository.save({ ...user, password });
+      await this.attachInvitations(newUser);
       return this.login(newUser.username, user.password);
     } catch (ex) {
       const errorMessage = `Error creating user: ${(ex as Error).message}`;
@@ -61,6 +69,22 @@ export class UserService {
         this.getCreateErrorReason((ex as Error).message) as any,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  private async attachInvitations(user: User): Promise<void> {
+    const invitations = await this.invitedUserRoleRepository.find({
+      where: { email: user.email },
+    });
+    for await (const invitation of invitations) {
+      await this.userRoleRepository.insert({
+        companyId: invitation.companyId,
+        userId: user.userId,
+        roleId: invitation.roleId,
+      });
+      await this.invitedUserRoleRepository.update(invitation, {
+        registered: true,
+      });
     }
   }
 
@@ -174,7 +198,6 @@ export class UserService {
       const userRoles = await this.userRoleRepository.find({
         where: { userId: user.userId },
       });
-      console.log(userRoles);
       return ServiceResponse.success('User found', {
         userId: user.userId,
         username: user.username,
@@ -201,6 +224,60 @@ export class UserService {
       logger.error(errorMessage);
       return ServiceResponse.success(
         'An error occurred while revoking token.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getRoles(): Promise<ServiceResponse<{ roles: RoleValue[] } | null>> {
+    try {
+      const roles = await this.roleRepository.find();
+      const roleValues: RoleValue[] = roles.map((role) => ({
+        value: role.roleId,
+        label: role.name,
+      }));
+      return ServiceResponse.success<{ roles: RoleValue[] }>('Roles', {
+        roles: roleValues,
+      });
+    } catch (ex) {
+      const errorMessage = `Error getting roles: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.success(
+        'An error occurred while getting roles.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async inviteUser(
+    email: string,
+    roleId: number,
+    companyId: number,
+  ): Promise<ServiceResponse> {
+    try {
+      const existing = await this.userRepository.findOne({ where: { email } });
+
+      const res = existing
+        ? await this.userRoleRepository.insert({
+            roleId,
+            userId: existing.userId,
+            companyId,
+          })
+        : await this.invitedUserRoleRepository.insert({
+            companyId,
+            roleId,
+            email,
+          });
+
+      console.log(res);
+      return ServiceResponse.success('Invited!', null);
+    } catch (ex) {
+      const errorMessage = `Error getting roles: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.success(
+        'An error occurred while getting roles.',
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
