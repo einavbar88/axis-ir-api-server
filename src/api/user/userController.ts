@@ -56,6 +56,15 @@ class UserController {
     return handleServiceResponse(serviceResponse, res);
   };
 
+  public getByCompanyId: RequestHandler = async (
+    req: Request,
+    res: Response,
+  ) => {
+    const { companyId } = req.params;
+    const serviceResponse = await userService.getByCompanyId(Number(companyId));
+    return handleServiceResponse(serviceResponse, res);
+  };
+
   public inviteUser: RequestHandler = async (req: Request, res: Response) => {
     const { email, role } = req.body;
     const { companyId } = req.params;

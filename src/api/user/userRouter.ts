@@ -7,7 +7,7 @@ userRouter.get('/:id', userController.getUser);
 
 userRouter.get('/getRoles/all', userController.getRoles);
 
-userRouter.get('/inviteUser/all', (req, res) => res.status(200).send('hi'));
+userRouter.get('/getByCompanyId/:companyId', userController.getByCompanyId);
 
 userRouter.post('/login', userController.login);
 

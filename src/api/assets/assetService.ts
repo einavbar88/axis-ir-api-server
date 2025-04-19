@@ -4,12 +4,15 @@ import { ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 import { getRepository } from '@/common/models/repository';
 import { Asset } from '@/entities/Asset';
+import { AssetGroup } from '@/entities/AssetGroup';
 
 export class AssetService {
   private assetRepository!: Repository<Asset>;
+  private assetGroupRepository!: Repository<AssetGroup>;
 
   async init() {
     this.assetRepository = await getRepository(Asset);
+    this.assetGroupRepository = await getRepository(AssetGroup);
   }
 
   async findByCompanyId(
@@ -105,6 +108,30 @@ export class AssetService {
       return ServiceResponse.success<Partial<Asset>>('Asset created', {
         assetId: newAsset.assetId,
       });
+    } catch (ex) {
+      const errorMessage = `Error creating Asset: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while creating Asset.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async createAssetGroup(
+    assetGroup: AssetGroup,
+  ): Promise<ServiceResponse<Partial<AssetGroup> | null>> {
+    try {
+      const newGroup = await this.assetGroupRepository.upsert(assetGroup, [
+        'on-duplicate-key-update',
+      ]);
+      const { assetGroupId } = newGroup.identifiers[0] as AssetGroup;
+      return ServiceResponse.success<Partial<AssetGroup>>(
+        'Asset group created',
+        {
+          assetGroupId,
+        },
+      );
     } catch (ex) {
       const errorMessage = `Error creating Asset: ${(ex as Error).message}`;
       logger.error(errorMessage);

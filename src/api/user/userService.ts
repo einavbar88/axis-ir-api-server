@@ -251,6 +251,40 @@ export class UserService {
     }
   }
 
+  async getByCompanyId(
+    companyId: number,
+  ): Promise<ServiceResponse<PartialUser[] | null>> {
+    try {
+      const users = await this.userRepository
+        .createQueryBuilder('user')
+        .innerJoin(UserRole, 'userRole', 'user.userId = userRole.userId')
+        .addSelect('user.userId', 'userId')
+        .addSelect('user.username', 'username')
+        .addSelect('user.email', 'email')
+        .addSelect('userRole.roleId', 'roleId')
+        .where('userRole.companyId = :companyId', { companyId })
+        .getRawMany();
+
+      return ServiceResponse.success<PartialUser[]>(
+        'Users',
+        users.map((user) => ({
+          userId: user.userId,
+          username: user.username,
+          email: user.email,
+          roleId: user.roleId,
+        })),
+      );
+    } catch (ex) {
+      const errorMessage = `Error getting users by company: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.success(
+        'An error occurred while getting users by company.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async inviteUser(
     email: string,
     roleId: number,

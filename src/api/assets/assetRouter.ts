@@ -19,3 +19,9 @@ assetRouter.get(
 assetRouter.get('/getById/:id', authMiddleware, assetController.getAssetById);
 
 assetRouter.post('/create', authMiddleware, assetController.createAsset);
+
+assetRouter.post(
+  '/createAssetGroup',
+  authMiddleware,
+  assetController.createAssetGroup,
+);

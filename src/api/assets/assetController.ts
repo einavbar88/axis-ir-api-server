@@ -3,6 +3,8 @@ import { handleServiceResponse } from '@/common/utils/httpHandlers';
 import { assetService } from '@/api/assets/assetService';
 import { Asset } from '@/entities/Asset';
 import type { CreateAssetDto } from './dto/createAsset.ts';
+import type { CreateAssetGroupDto } from '@/api/assets/dto/CreateAssetGroupDto';
+import { AssetGroup } from '@/entities/AssetGroup';
 
 class AssetController {
   private isInitialized = false;
@@ -41,13 +43,34 @@ class AssetController {
   public createAsset: RequestHandler = async (req: Request, res: Response) => {
     const assetData: CreateAssetDto = req.body;
 
-    // Create a new Asset object from the DTO
     const asset = new Asset();
     Object.assign(asset, assetData);
 
     const serviceResponse = await assetService.create(asset);
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public createAssetGroup: RequestHandler = async (
+    req: Request,
+    res: Response,
+  ) => {
+    const assetGroupData: CreateAssetGroupDto = req.body;
+    const assetGroup = new AssetGroup();
+    Object.assign(assetGroup, assetGroupData);
+
+    const serviceResponse = await assetService.createAssetGroup(assetGroup);
+    return handleServiceResponse(serviceResponse, res);
+  };
+
+  // public assignToAssetGroup: RequestHandler = async (
+  //   req: Request,
+  //   res: Response,
+  // ) => {
+  //   const { assetGroupId, assetId } = req.body;
+  //   const update = await assetService.createAssetGroup();
+  //   const serviceResponse = await assetService.createAssetGroup(assetGroup);
+  //   return handleServiceResponse(serviceResponse, res);
+  // };
 }
 
 export const assetController = new AssetController();
