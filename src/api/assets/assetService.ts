@@ -5,23 +5,33 @@ import { logger } from '@/server';
 import { getRepository } from '@/common/models/repository';
 import { Asset } from '@/entities/Asset';
 import { AssetGroup } from '@/entities/AssetGroup';
+import { AssetGroupAssign } from '@/entities/AssetGroupAssign';
+
+type WithGroups = Asset & { groups: number[] };
+
+const getGroupsIds = (assigns: AssetGroupAssign[]) => {
+  return assigns.map((assign) => assign.assetGroupId);
+};
 
 export class AssetService {
   private assetRepository!: Repository<Asset>;
   private assetGroupRepository!: Repository<AssetGroup>;
+  private assetGroupAssignRepository!: Repository<AssetGroupAssign>;
 
   async init() {
     this.assetRepository = await getRepository(Asset);
     this.assetGroupRepository = await getRepository(AssetGroup);
+    this.assetGroupAssignRepository = await getRepository(AssetGroupAssign);
   }
 
   async findByCompanyId(
     companyId: number,
-  ): Promise<ServiceResponse<Asset[] | null>> {
+  ): Promise<ServiceResponse<WithGroups[] | null>> {
     try {
       const assets = await this.assetRepository.find({
         where: { companyId },
       });
+      const withGroups = [];
 
       if (!assets || assets.length === 0) {
         return ServiceResponse.failure(
@@ -30,7 +40,15 @@ export class AssetService {
           StatusCodes.NOT_FOUND,
         );
       }
-      return ServiceResponse.success<Asset[]>('assets found', assets);
+
+      for await (const asset of assets) {
+        const assigns = await this.assetGroupAssignRepository.find({
+          where: { assetId: asset.assetId },
+        });
+        withGroups.push({ ...asset, groups: getGroupsIds(assigns) });
+      }
+
+      return ServiceResponse.success<WithGroups[]>('assets found', withGroups);
     } catch (ex) {
       const errorMessage = `Error finding all assets: $${(ex as Error).message}`;
       logger.error(errorMessage);
@@ -42,11 +60,16 @@ export class AssetService {
     }
   }
 
-  async findById(id: number): Promise<ServiceResponse<Asset | null>> {
+  async findById(id: number): Promise<ServiceResponse<WithGroups | null>> {
     try {
       const asset = await this.assetRepository.findOne({
         where: { assetId: id },
       });
+
+      const assigns = await this.assetGroupAssignRepository.find({
+        where: { assetId: id },
+      });
+
       if (!asset) {
         return ServiceResponse.failure(
           'asset not found',
@@ -54,12 +77,44 @@ export class AssetService {
           StatusCodes.NOT_FOUND,
         );
       }
-      return ServiceResponse.success<Asset>('Asset found', asset);
+      return ServiceResponse.success<WithGroups>('Asset found', {
+        ...asset,
+        groups: getGroupsIds(assigns),
+      });
     } catch (ex) {
       const errorMessage = `Error finding asset with id ${id}:, ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
         'An error occurred while finding asset.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async findAssetGroups(
+    id: number,
+  ): Promise<ServiceResponse<AssetGroup[] | null>> {
+    try {
+      const assetGroups = await this.assetGroupRepository.find({
+        where: { companyId: id },
+      });
+      if (!assetGroups) {
+        return ServiceResponse.failure(
+          'asset not found',
+          null,
+          StatusCodes.NOT_FOUND,
+        );
+      }
+      return ServiceResponse.success<AssetGroup[]>(
+        'Asset groups found',
+        assetGroups,
+      );
+    } catch (ex) {
+      const errorMessage = `Error finding asset groups for company id ${id}:, ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while finding asset groups.',
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
@@ -77,9 +132,16 @@ export class AssetService {
           StatusCodes.BAD_REQUEST,
         );
       }
-      const assets = await this.assetRepository.find({
-        where: { assetGroupId },
-      });
+      const assets = await this.assetRepository
+        .createQueryBuilder('asset')
+        .innerJoin(
+          'asset_group_assign',
+          'assign',
+          'assign.asset_id = asset.asset_id',
+        )
+        .where('assign.asset_group_id = :groupId', { groupId: assetGroupId })
+        .select('asset', 'assign.asset_group_id')
+        .getMany();
 
       if (!assets) {
         return ServiceResponse.failure(
@@ -103,8 +165,27 @@ export class AssetService {
 
   async create(asset: Asset): Promise<ServiceResponse<Partial<Asset> | null>> {
     try {
-      const newAsset = await this.assetRepository.save(asset);
-      await this.assetRepository.save(asset);
+      const insert: Asset = {
+        ...asset,
+        assetGroupId: JSON.stringify(asset.assetGroupId ?? ''),
+      };
+      const res = await this.assetRepository.upsert(insert, ['assetId']);
+      const newAsset = res.identifiers[0] as Asset;
+      if (newAsset.assetGroupId) {
+        try {
+          const assetGroupsArray: number[] = JSON.parse(asset.assetGroupId);
+          await this.assetGroupAssignRepository.insert(
+            assetGroupsArray.map((group) => ({
+              assetGroupId: group,
+              assetId: newAsset.assetId,
+            })),
+          );
+        } catch (error) {
+          logger.error(
+            `Error parsing assetGroupId for asset ${asset.assetId}: ${error}`,
+          );
+        }
+      }
       return ServiceResponse.success<Partial<Asset>>('Asset created', {
         assetId: newAsset.assetId,
       });
@@ -138,6 +219,35 @@ export class AssetService {
       return ServiceResponse.failure(
         'An error occurred while creating Asset.',
         null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async assignAssetGroup(
+    assetGroupId: number,
+    assetId: number,
+    isRemove = false,
+  ): Promise<ServiceResponse<boolean>> {
+    try {
+      if (isRemove) {
+        await this.assetGroupAssignRepository.delete({ assetGroupId, assetId });
+        return ServiceResponse.success<boolean>(
+          'Asset assignment removed',
+          true,
+        );
+      }
+      await this.assetGroupAssignRepository.insert({
+        assetGroupId,
+        assetId,
+      });
+      return ServiceResponse.success<boolean>('Asset assignment created', true);
+    } catch (ex) {
+      const errorMessage = `Error assigning Asset: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while assigning Asset.',
+        false,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }

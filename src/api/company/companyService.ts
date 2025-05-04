@@ -27,7 +27,6 @@ export class CompanyService {
         where: { userId },
       });
       const companiesIds = roles.map((role) => role.companyId);
-      console.log(companiesIds);
       const companies = await this.companyRepository.find({
         where: { companyId: In([...companiesIds]) },
       });

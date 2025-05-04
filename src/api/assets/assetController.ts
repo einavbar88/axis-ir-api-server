@@ -50,6 +50,26 @@ class AssetController {
     return handleServiceResponse(serviceResponse, res);
   };
 
+  public updateAsset: RequestHandler = async (req: Request, res: Response) => {
+    const { data, assetId } = req.body;
+    const assetData: CreateAssetDto = { ...data, assetId };
+
+    const asset = new Asset();
+    Object.assign(asset, assetData);
+
+    const serviceResponse = await assetService.create(asset);
+    return handleServiceResponse(serviceResponse, res);
+  };
+
+  public getAssetGroups: RequestHandler = async (
+    req: Request,
+    res: Response,
+  ) => {
+    const companyId = Number(req.params.companyId);
+    const serviceResponse = await assetService.findAssetGroups(companyId);
+    return handleServiceResponse(serviceResponse, res);
+  };
+
   public createAssetGroup: RequestHandler = async (
     req: Request,
     res: Response,
@@ -62,15 +82,18 @@ class AssetController {
     return handleServiceResponse(serviceResponse, res);
   };
 
-  // public assignToAssetGroup: RequestHandler = async (
-  //   req: Request,
-  //   res: Response,
-  // ) => {
-  //   const { assetGroupId, assetId } = req.body;
-  //   const update = await assetService.createAssetGroup();
-  //   const serviceResponse = await assetService.createAssetGroup(assetGroup);
-  //   return handleServiceResponse(serviceResponse, res);
-  // };
+  public assignToAssetGroup: RequestHandler = async (
+    req: Request,
+    res: Response,
+  ) => {
+    const { assetGroupId, assetId, isRemove } = req.body;
+    const serviceResponse = await assetService.assignAssetGroup(
+      assetGroupId,
+      assetId,
+      isRemove,
+    );
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const assetController = new AssetController();

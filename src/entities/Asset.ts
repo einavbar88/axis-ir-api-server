@@ -21,8 +21,8 @@ export class Asset {
   @PrimaryGeneratedColumn({ type: 'int', name: 'asset_id' })
   assetId: number;
 
-  @Column('int', { name: 'asset_group_id', nullable: true })
-  assetGroupId: number | null;
+  @Column('varchar', { name: 'asset_group_id', nullable: true })
+  assetGroupId: string;
 
   @Column('int', { name: 'company_id', nullable: true })
   companyId: number | null;

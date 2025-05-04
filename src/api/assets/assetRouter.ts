@@ -16,12 +16,26 @@ assetRouter.get(
   assetController.getAssetsByAssetGroup,
 );
 
+assetRouter.get(
+  '/getAssetGroups/:companyId',
+  authMiddleware,
+  assetController.getAssetGroups,
+);
+
 assetRouter.get('/getById/:id', authMiddleware, assetController.getAssetById);
 
 assetRouter.post('/create', authMiddleware, assetController.createAsset);
+
+assetRouter.post('/update', authMiddleware, assetController.createAsset);
 
 assetRouter.post(
   '/createAssetGroup',
   authMiddleware,
   assetController.createAssetGroup,
+);
+
+assetRouter.post(
+  '/assignAssetToGroup',
+  authMiddleware,
+  assetController.assignToAssetGroup,
 );

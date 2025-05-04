@@ -20,3 +20,5 @@ userRouter.post('/signup', userController.signup);
 userRouter.post('/update/:id', userController.updateUserDetails);
 
 userRouter.post('/inviteUser/:companyId', userController.inviteUser);
+
+userRouter.post('/changeRole/:companyId', userController.changeUserRole);

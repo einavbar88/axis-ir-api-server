@@ -305,8 +305,36 @@ export class UserService {
             email,
           });
 
-      console.log(res);
       return ServiceResponse.success('Invited!', null);
+    } catch (ex) {
+      const errorMessage = `Error getting roles: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.success(
+        'An error occurred while getting roles.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async changeUserRole(userId: number, roleId: number, companyId: number) {
+    try {
+      const current = await this.userRoleRepository.findOne({
+        where: { userId, companyId },
+      });
+      if (!current) {
+        return ServiceResponse.failure(
+          'User not found',
+          null,
+          StatusCodes.NOT_FOUND,
+        );
+      }
+      const res = await this.userRoleRepository.update(current, { roleId });
+
+      if (!res.affected)
+        throw new Error(`Error updating user role: ${res.affected}`);
+
+      return ServiceResponse.success('User role updated', null);
     } catch (ex) {
       const errorMessage = `Error getting roles: ${(ex as Error).message}`;
       logger.error(errorMessage);

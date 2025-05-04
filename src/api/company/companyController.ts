@@ -27,7 +27,6 @@ class CompanyController {
     res: Response,
   ) => {
     const id = req.params.id;
-    console.log(id);
     const serviceResponse = await companyService.findById(Number(id));
     return handleServiceResponse(serviceResponse, res);
   };

@@ -10,6 +10,7 @@ import { reportRouter } from '@/api/report/reportRouter';
 import { companyRouter } from '@/api/company/companyRouter';
 import { userRouter } from '@/api/user/userRouter';
 import { assetRouter } from '@/api/assets/assetRouter';
+import { incidentRouter } from '@/api/incidents/incidentRouter';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -32,6 +33,7 @@ app.use('/users', userRouter);
 app.use('/reports', reportRouter);
 app.use('/accounts', companyRouter);
 app.use('/assets', assetRouter);
+app.use('/incidents', incidentRouter);
 
 // Error handlers
 app.use(errorHandler());

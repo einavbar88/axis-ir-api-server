@@ -75,6 +75,20 @@ class UserController {
     );
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public changeUserRole: RequestHandler = async (
+    req: Request,
+    res: Response,
+  ) => {
+    const { userId, role } = req.body;
+    const { companyId } = req.params;
+    const serviceResponse = await userService.changeUserRole(
+      userId,
+      role,
+      Number(companyId),
+    );
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const userController = new UserController();

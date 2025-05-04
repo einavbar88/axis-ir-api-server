@@ -24,6 +24,7 @@ import { Log } from '@/entities/Log';
 import { TokenWhitelist } from '@/entities/TokenWhitelist';
 import { Role } from '@/entities/Role';
 import { InvitedUser } from '@/entities/InvitedUser';
+import { AssetGroupAssign } from '@/entities/AssetGroupAssign';
 
 let repository: DataSource;
 
@@ -40,6 +41,7 @@ const initialize = async () => {
     entities: [
       Asset,
       AssetGroup,
+      AssetGroupAssign,
       Comment,
       Company,
       Contact,

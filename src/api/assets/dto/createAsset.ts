@@ -1,44 +1,44 @@
-import { IsDate, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsInt, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateAssetDto {
+  @IsOptional()
+  @IsString()
+  assetGroupId?: string;
+
+  @IsOptional()
+  @IsInt()
+  companyId?: number;
+
+  @IsOptional()
+  @IsInt()
+  parentAssetId?: number;
+
+  @IsOptional()
+  @IsInt()
+  priority?: number;
+
   @IsString()
   name: string;
 
-  @IsString()
-  type: string;
-
-  @IsString()
   @IsOptional()
-  serialNumber?: string;
-
   @IsString()
-  @IsOptional()
-  model?: string;
+  type?: string;
 
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  manufacturer?: string;
+  operatingSystem?: string;
 
-  @IsNumber()
   @IsOptional()
-  purchasePrice?: number;
+  @IsString()
+  status?: string;
 
+  @IsOptional()
+  @IsString()
+  tlp?: string;
+
+  @IsOptional()
+  @Type(() => Date)
   @IsDate()
-  @IsOptional()
-  purchaseDate?: Date;
-
-  @IsString()
-  @IsOptional()
-  location?: string;
-
-  @IsInt()
-  @IsOptional()
-  status?: number;
-
-  @IsString()
-  @IsOptional()
-  description?: string;
-
-  @IsString()
-  companyId: string;
+  lastHeartbeat?: Date;
 }
