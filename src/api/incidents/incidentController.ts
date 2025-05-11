@@ -17,7 +17,8 @@ class IncidentController {
     _req: Request,
     res: Response,
   ) => {
-    const serviceResponse = await incidentService.findAll();
+    const companyId = Number(_req.params.companyId);
+    const serviceResponse = await incidentService.findAll(companyId);
     return handleServiceResponse(serviceResponse, res);
   };
 
@@ -29,6 +30,11 @@ class IncidentController {
 
   public create: RequestHandler = async (req: Request, res: Response) => {
     const serviceResponse = await incidentService.create(req.body);
+    return handleServiceResponse(serviceResponse, res);
+  };
+
+  public update: RequestHandler = async (req: Request, res: Response) => {
+    const serviceResponse = await incidentService.update(req.body);
     return handleServiceResponse(serviceResponse, res);
   };
 }

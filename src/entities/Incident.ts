@@ -11,9 +11,9 @@ import {
 } from 'typeorm';
 import { Comment } from './Comment';
 import { Company } from './Company';
-import { IncidentAssign } from './IncidentAssign';
 import { Report } from './Report';
 import { Task } from './Task';
+import { User } from '@/entities/User';
 
 @Index('company_id', ['companyId'], {})
 @Entity('incident', { schema: 'AxisIR-DB' })
@@ -23,6 +23,17 @@ export class Incident {
 
   @Column('int', { name: 'company_id' })
   companyId: number;
+
+  @ManyToOne(
+    () => User,
+    (user) => user.incident,
+    {
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    },
+  )
+  @JoinColumn({ name: 'assignee', referencedColumnName: 'userId' })
+  assignee: User;
 
   @Column('varchar', { name: 'title', length: 255 })
   title: string;
@@ -76,12 +87,6 @@ export class Incident {
   )
   @JoinColumn([{ name: 'company_id', referencedColumnName: 'companyId' }])
   company: Company;
-
-  @OneToMany(
-    () => IncidentAssign,
-    (incidentAssign) => incidentAssign.case,
-  )
-  incidentAssigns: IncidentAssign[];
 
   @OneToMany(
     () => Report,

@@ -17,7 +17,6 @@ import { AssetGroup } from '@/entities/AssetGroup';
 import { Asset } from '@/entities/Asset';
 import { Indicator } from '@/entities/Indicator';
 import { Incident } from '@/entities/Incident';
-import { IncidentAssign } from '@/entities/IncidentAssign';
 import { Task } from '@/entities/Task';
 import { TaskAssign } from '@/entities/TaskAssign';
 import { Log } from '@/entities/Log';
@@ -46,7 +45,6 @@ const initialize = async () => {
       Company,
       Contact,
       Incident,
-      IncidentAssign,
       Indicator,
       InvitedUser,
       Log,

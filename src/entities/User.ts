@@ -8,11 +8,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Comment } from './Comment';
-import { IncidentAssign } from './IncidentAssign';
 import { Indicator } from './Indicator';
 import { Log } from './Log';
 import { Report } from './Report';
 import { TaskAssign } from './TaskAssign';
+import { Incident } from '@/entities/Incident';
 
 @Index('username', ['username'], { unique: true })
 @Index('email', ['email'], { unique: true })
@@ -64,16 +64,10 @@ export class User {
   comments: Comment[];
 
   @OneToMany(
-    () => IncidentAssign,
-    (incidentAssign) => incidentAssign.user,
+    () => Incident,
+    (incident) => incident.assignee,
   )
-  incidentAssigns: IncidentAssign[];
-
-  @OneToMany(
-    () => IncidentAssign,
-    (incidentAssign) => incidentAssign.assignedBy2,
-  )
-  incidentAssigns2: IncidentAssign[];
+  incident: Incident[];
 
   @OneToMany(
     () => Indicator,
