@@ -14,7 +14,6 @@ import { Incident } from './Incident';
 import { Indicator } from './Indicator';
 import { Asset } from './Asset';
 import { AssetGroup } from './AssetGroup';
-import { TaskAssign } from './TaskAssign';
 
 @Index('case_id', ['caseId'], {})
 @Index('ioc_id', ['iocId'], {})
@@ -28,14 +27,17 @@ export class Task {
   @Column('int', { name: 'case_id', nullable: true })
   caseId: number | null;
 
-  @Column('int', { name: 'ioc_id', nullable: true })
-  iocId: number | null;
+  @Column('text', { name: 'ioc_id', nullable: true })
+  iocId: string | null;
 
-  @Column('int', { name: 'asset_id', nullable: true })
-  assetId: number | null;
+  @Column('int', { name: 'assignee', nullable: true })
+  assignee: number | null;
 
-  @Column('int', { name: 'asset_group_id', nullable: true })
-  assetGroupId: number | null;
+  @Column('text', { name: 'asset_id', nullable: true })
+  assetId: string | null;
+
+  @Column('text', { name: 'asset_group_id', nullable: true })
+  assetGroupId: string | null;
 
   @Column('varchar', { name: 'title', length: 255 })
   title: string;
@@ -118,10 +120,4 @@ export class Task {
     { name: 'asset_group_id', referencedColumnName: 'assetGroupId' },
   ])
   assetGroup: AssetGroup;
-
-  @OneToMany(
-    () => TaskAssign,
-    (taskAssign) => taskAssign.task,
-  )
-  taskAssigns: TaskAssign[];
 }

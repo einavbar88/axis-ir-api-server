@@ -18,7 +18,6 @@ import { Asset } from '@/entities/Asset';
 import { Indicator } from '@/entities/Indicator';
 import { Incident } from '@/entities/Incident';
 import { Task } from '@/entities/Task';
-import { TaskAssign } from '@/entities/TaskAssign';
 import { Log } from '@/entities/Log';
 import { TokenWhitelist } from '@/entities/TokenWhitelist';
 import { Role } from '@/entities/Role';
@@ -51,7 +50,6 @@ const initialize = async () => {
       Report,
       Role,
       Task,
-      TaskAssign,
       TokenWhitelist,
       User,
       UserRole,

@@ -11,8 +11,8 @@ import { Comment } from './Comment';
 import { Indicator } from './Indicator';
 import { Log } from './Log';
 import { Report } from './Report';
-import { TaskAssign } from './TaskAssign';
 import { Incident } from '@/entities/Incident';
+import { Task } from '@/entities/Task';
 
 @Index('username', ['username'], { unique: true })
 @Index('email', ['email'], { unique: true })
@@ -70,6 +70,12 @@ export class User {
   incident: Incident[];
 
   @OneToMany(
+    () => Task,
+    (task) => task.assignee,
+  )
+  tasks: Incident[];
+
+  @OneToMany(
     () => Indicator,
     (indicator) => indicator.classifiedBy2,
   )
@@ -86,10 +92,4 @@ export class User {
     (report) => report.createdBy2,
   )
   reports: Report[];
-
-  @OneToMany(
-    () => TaskAssign,
-    (taskAssign) => taskAssign.user,
-  )
-  taskAssigns: TaskAssign[];
 }

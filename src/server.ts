@@ -11,6 +11,7 @@ import { companyRouter } from '@/api/company/companyRouter';
 import { userRouter } from '@/api/user/userRouter';
 import { assetRouter } from '@/api/assets/assetRouter';
 import { incidentRouter } from '@/api/incidents/incidentRouter';
+import { taskRouter } from '@/api/tasks/taskRouter';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -34,6 +35,7 @@ app.use('/reports', reportRouter);
 app.use('/accounts', companyRouter);
 app.use('/assets', assetRouter);
 app.use('/incidents', incidentRouter);
+app.use('/tasks', taskRouter);
 
 // Error handlers
 app.use(errorHandler());
