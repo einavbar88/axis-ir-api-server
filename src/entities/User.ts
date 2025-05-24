@@ -38,7 +38,7 @@ export class User {
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({
     name: 'updated_at',

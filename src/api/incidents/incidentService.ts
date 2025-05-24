@@ -4,6 +4,7 @@ import { Incident } from '@/entities/Incident';
 import { ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 import { getRepository } from '@/common/models/repository';
+import { getTimeFrameQuery, type TimeFrames } from '@/common/utils/queryHelper';
 
 type IncidentResponse = Partial<Incident> & {
   assigneeName?: string;
@@ -18,15 +19,20 @@ export class IncidentService {
 
   async findAll(
     companyId: number,
+    timeFrame: TimeFrames,
   ): Promise<ServiceResponse<IncidentResponse[] | null>> {
+    const timeFrameQuery = getTimeFrameQuery(timeFrame, 'incident', 'openedAt');
+    console.log('timeFrame', timeFrameQuery);
     try {
       const incidents = await this.incidentRepository
         .createQueryBuilder('incident')
         .leftJoinAndSelect('incident.assignee', 'user')
         .select(['incident', 'user.username'])
         .where('incident.companyId = :companyId', { companyId })
+        .andWhere(timeFrameQuery)
         .getMany();
 
+      console.log(incidents);
       if (!incidents || incidents.length === 0) {
         return ServiceResponse.failure(
           'No incidents found',

@@ -51,12 +51,10 @@ class AssetController {
   };
 
   public updateAsset: RequestHandler = async (req: Request, res: Response) => {
-    const { data, assetId } = req.body;
-    const assetData: CreateAssetDto = { ...data, assetId };
+    const assetData: CreateAssetDto = req.body;
 
     const asset = new Asset();
     Object.assign(asset, assetData);
-
     const serviceResponse = await assetService.create(asset);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -91,6 +89,19 @@ class AssetController {
       assetGroupId,
       assetId,
       isRemove,
+    );
+    return handleServiceResponse(serviceResponse, res);
+  };
+
+  public getInfectedAssets: RequestHandler = async (
+    req: Request,
+    res: Response,
+  ) => {
+    const companyId = Number(req.params.companyId);
+    const timeFrame = req.query.timeFrame as string;
+    const serviceResponse = await assetService.getInfectedAssets(
+      companyId,
+      timeFrame,
     );
     return handleServiceResponse(serviceResponse, res);
   };

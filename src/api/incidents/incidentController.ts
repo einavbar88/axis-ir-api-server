@@ -2,6 +2,7 @@ import type { Request, RequestHandler, Response } from 'express';
 
 import { incidentService } from '@/api/incidents/incidentService';
 import { handleServiceResponse } from '@/common/utils/httpHandlers';
+import type { TimeFrames } from '@/common/utils/queryHelper';
 
 class IncidentController {
   private isInitialized = false;
@@ -17,8 +18,10 @@ class IncidentController {
     _req: Request,
     res: Response,
   ) => {
-    const companyId = Number(_req.params.companyId);
-    const serviceResponse = await incidentService.findAll(companyId);
+    const serviceResponse = await incidentService.findAll(
+      Number(_req.params.companyId),
+      _req.query.timeFrame as TimeFrames,
+    );
     return handleServiceResponse(serviceResponse, res);
   };
 

@@ -134,11 +134,7 @@ export class AssetService {
       }
       const assets = await this.assetRepository
         .createQueryBuilder('asset')
-        .innerJoin(
-          'asset_group_assign',
-          'assign',
-          'assign.asset_id = asset.asset_id',
-        )
+        .innerJoin('assign', 'assign.asset_id = asset.asset_id')
         .where('assign.asset_group_id = :groupId', { groupId: assetGroupId })
         .select('asset', 'assign.asset_group_id')
         .getMany();
@@ -169,6 +165,7 @@ export class AssetService {
         ...asset,
         assetGroupId: JSON.stringify(asset.assetGroupId ?? ''),
       };
+      console.log(insert);
       const res = await this.assetRepository.upsert(insert, ['assetId']);
       const newAsset = res.identifiers[0] as Asset;
       if (newAsset.assetGroupId) {
@@ -247,6 +244,20 @@ export class AssetService {
       logger.error(errorMessage);
       return ServiceResponse.failure(
         'An error occurred while assigning Asset.',
+        false,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getInfectedAssets(companyId: number, timeFrame: string) {
+    try {
+      return ServiceResponse.success<any>('Found infected assets', true);
+    } catch (ex) {
+      const errorMessage = `Error finding infected assets: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while finding infected asset.',
         false,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );

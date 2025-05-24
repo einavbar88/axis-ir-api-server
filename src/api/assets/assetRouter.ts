@@ -22,11 +22,17 @@ assetRouter.get(
   assetController.getAssetGroups,
 );
 
+assetRouter.get(
+  '/getInfectedAssets/:companyId',
+  authMiddleware,
+  assetController.getInfectedAssets,
+);
+
 assetRouter.get('/getById/:id', authMiddleware, assetController.getAssetById);
 
 assetRouter.post('/create', authMiddleware, assetController.createAsset);
 
-assetRouter.post('/update', authMiddleware, assetController.createAsset);
+assetRouter.post('/update', authMiddleware, assetController.updateAsset);
 
 assetRouter.post(
   '/createAssetGroup',
