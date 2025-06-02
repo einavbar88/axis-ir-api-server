@@ -68,6 +68,15 @@ class AssetController {
     return handleServiceResponse(serviceResponse, res);
   };
 
+  public getAssetGroup: RequestHandler = async (
+    req: Request,
+    res: Response,
+  ) => {
+    const assetGroupId = Number(req.params.assetGroupId);
+    const serviceResponse = await assetService.findAssetGroup(assetGroupId);
+    return handleServiceResponse(serviceResponse, res);
+  };
+
   public createAssetGroup: RequestHandler = async (
     req: Request,
     res: Response,
@@ -93,15 +102,12 @@ class AssetController {
     return handleServiceResponse(serviceResponse, res);
   };
 
-  public getInfectedAssets: RequestHandler = async (
-    req: Request,
-    res: Response,
-  ) => {
-    const companyId = Number(req.params.companyId);
-    const timeFrame = req.query.timeFrame as string;
-    const serviceResponse = await assetService.getInfectedAssets(
-      companyId,
-      timeFrame,
+  public getIoc: RequestHandler = async (req: Request, res: Response) => {
+    const { timeFrame } = req.query;
+    const { assetId } = req.params;
+    const serviceResponse = await assetService.getIoc(
+      assetId,
+      timeFrame as string,
     );
     return handleServiceResponse(serviceResponse, res);
   };

@@ -23,6 +23,7 @@ import { TokenWhitelist } from '@/entities/TokenWhitelist';
 import { Role } from '@/entities/Role';
 import { InvitedUser } from '@/entities/InvitedUser';
 import { AssetGroupAssign } from '@/entities/AssetGroupAssign';
+import { IndicatorLink } from '@/entities/IndicatorLink';
 
 let repository: DataSource;
 
@@ -45,6 +46,7 @@ const initialize = async () => {
       Contact,
       Incident,
       Indicator,
+      IndicatorLink,
       InvitedUser,
       Log,
       Report,

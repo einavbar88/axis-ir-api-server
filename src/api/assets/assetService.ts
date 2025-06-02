@@ -6,6 +6,12 @@ import { getRepository } from '@/common/models/repository';
 import { Asset } from '@/entities/Asset';
 import { AssetGroup } from '@/entities/AssetGroup';
 import { AssetGroupAssign } from '@/entities/AssetGroupAssign';
+import { IndicatorLink } from '@/entities/IndicatorLink';
+import {
+  getAnyOf,
+  getTimeFrameQuery,
+  type TimeFrames,
+} from '@/common/utils/queryHelper';
 
 type WithGroups = Asset & { groups: number[] };
 
@@ -17,11 +23,13 @@ export class AssetService {
   private assetRepository!: Repository<Asset>;
   private assetGroupRepository!: Repository<AssetGroup>;
   private assetGroupAssignRepository!: Repository<AssetGroupAssign>;
+  private indicatorLinkRepository!: Repository<IndicatorLink>;
 
   async init() {
     this.assetRepository = await getRepository(Asset);
     this.assetGroupRepository = await getRepository(AssetGroup);
     this.assetGroupAssignRepository = await getRepository(AssetGroupAssign);
+    this.indicatorLinkRepository = await getRepository(IndicatorLink);
   }
 
   async findByCompanyId(
@@ -121,6 +129,35 @@ export class AssetService {
     }
   }
 
+  async findAssetGroup(
+    id: number,
+  ): Promise<ServiceResponse<AssetGroup | null>> {
+    try {
+      const assetGroup = await this.assetGroupRepository.findOne({
+        where: { assetGroupId: id },
+      });
+      if (!assetGroup) {
+        return ServiceResponse.failure(
+          'Asset group not found',
+          null,
+          StatusCodes.NOT_FOUND,
+        );
+      }
+      return ServiceResponse.success<AssetGroup>(
+        'Asset group found',
+        assetGroup,
+      );
+    } catch (ex) {
+      const errorMessage = `Error finding asset groups for id ${id}:, ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while finding asset group.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async findByAssetGroup(
     assetGroupId: number,
   ): Promise<ServiceResponse<Asset[] | null>> {
@@ -132,11 +169,12 @@ export class AssetService {
           StatusCodes.BAD_REQUEST,
         );
       }
+
+      const query = getAnyOf(assetGroupId, 'asset_group_id');
+
       const assets = await this.assetRepository
         .createQueryBuilder('asset')
-        .innerJoin('assign', 'assign.asset_id = asset.asset_id')
-        .where('assign.asset_group_id = :groupId', { groupId: assetGroupId })
-        .select('asset', 'assign.asset_group_id')
+        .where(query)
         .getMany();
 
       if (!assets) {
@@ -165,7 +203,7 @@ export class AssetService {
         ...asset,
         assetGroupId: JSON.stringify(asset.assetGroupId ?? ''),
       };
-      console.log(insert);
+
       const res = await this.assetRepository.upsert(insert, ['assetId']);
       const newAsset = res.identifiers[0] as Asset;
       if (newAsset.assetGroupId) {
@@ -201,7 +239,7 @@ export class AssetService {
   ): Promise<ServiceResponse<Partial<AssetGroup> | null>> {
     try {
       const newGroup = await this.assetGroupRepository.upsert(assetGroup, [
-        'on-duplicate-key-update',
+        'assetGroupId',
       ]);
       const { assetGroupId } = newGroup.identifiers[0] as AssetGroup;
       return ServiceResponse.success<Partial<AssetGroup>>(
@@ -250,15 +288,34 @@ export class AssetService {
     }
   }
 
-  async getInfectedAssets(companyId: number, timeFrame: string) {
+  async getIoc(
+    assetId: string,
+    timeFrame: string,
+  ): Promise<ServiceResponse<IndicatorLink[] | null>> {
     try {
-      return ServiceResponse.success<any>('Found infected assets', true);
+      const alias = 'indicator_list';
+      const queryBuilder = this.indicatorLinkRepository
+        .createQueryBuilder(alias)
+        .where(`${alias}.asset_id = :assetId`, { assetId });
+
+      const timeCondition = getTimeFrameQuery(
+        timeFrame as TimeFrames,
+        alias,
+        'createdAt',
+      );
+      if (timeCondition !== '1=1') {
+        queryBuilder.andWhere(timeCondition);
+      }
+
+      const links = await queryBuilder.getMany();
+
+      return ServiceResponse.success<IndicatorLink[]>('Found IOCs', links);
     } catch (ex) {
-      const errorMessage = `Error finding infected assets: ${(ex as Error).message}`;
+      const errorMessage = `Error finding IOCs: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
-        'An error occurred while finding infected asset.',
-        false,
+        'An error occurred while finding IOCs.',
+        null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }

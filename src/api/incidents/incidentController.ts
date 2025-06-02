@@ -40,7 +40,16 @@ class IncidentController {
     const serviceResponse = await incidentService.update(req.body);
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public getIoc: RequestHandler = async (req: Request, res: Response) => {
+    const { timeFrame, caseIds } = req.query;
+    const serviceResponse = await incidentService.getIoc(
+      ((caseIds as string) || '').split('-'),
+      timeFrame as string,
+    );
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
-export const reportController = new IncidentController();
-reportController.init();
+export const incidentController = new IncidentController();
+incidentController.init();

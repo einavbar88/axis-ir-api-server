@@ -56,3 +56,12 @@ const setToMidnight = (date: Date) => {
   date.setMilliseconds(0);
   return date;
 };
+
+export const getAnyOf = (id: number, fieldName: string) => {
+  return `(
+            ${fieldName} LIKE CONCAT('[', ${id}, ',%')  OR
+            ${fieldName} LIKE CONCAT('%,', ${id}, ',%') OR
+            ${fieldName} LIKE CONCAT('%,', ${id}, ']') OR
+            ${fieldName} = CONCAT('[', ${id}, ']')
+        )`;
+};

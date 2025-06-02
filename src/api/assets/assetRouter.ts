@@ -11,7 +11,7 @@ assetRouter.get(
 );
 
 assetRouter.get(
-  '/getAssetsByAssetGroup',
+  '/getAssetsByAssetGroup/:assetGroupId',
   authMiddleware,
   assetController.getAssetsByAssetGroup,
 );
@@ -23,10 +23,14 @@ assetRouter.get(
 );
 
 assetRouter.get(
-  '/getInfectedAssets/:companyId',
+  '/getAssetGroup/:assetGroupId',
   authMiddleware,
-  assetController.getInfectedAssets,
+  assetController.getAssetGroup,
 );
+
+assetRouter.get('/getIoc/:assetId', authMiddleware, assetController.getIoc);
+
+assetRouter.get('/getIoc/:assetId', authMiddleware, assetController.getIoc);
 
 assetRouter.get('/getById/:id', authMiddleware, assetController.getAssetById);
 

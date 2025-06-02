@@ -1,12 +1,17 @@
 import express, { type Router } from 'express';
-import { reportController } from './incidentController';
+import { incidentController } from './incidentController';
 
 export const incidentRouter: Router = express.Router();
 
-incidentRouter.get('/getByCompanyId/:companyId', reportController.getIncidents);
+incidentRouter.get(
+  '/getByCompanyId/:companyId',
+  incidentController.getIncidents,
+);
 
-incidentRouter.get('/getById/:id', reportController.getById);
+incidentRouter.get('/getById/:id', incidentController.getById);
 
-incidentRouter.post('/create', reportController.create);
+incidentRouter.get('/getIoc', incidentController.getIoc);
 
-incidentRouter.post('/update', reportController.update);
+incidentRouter.post('/create', incidentController.create);
+
+incidentRouter.post('/update', incidentController.update);

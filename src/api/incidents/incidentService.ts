@@ -5,6 +5,7 @@ import { ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 import { getRepository } from '@/common/models/repository';
 import { getTimeFrameQuery, type TimeFrames } from '@/common/utils/queryHelper';
+import { IndicatorLink } from '@/entities/IndicatorLink';
 
 type IncidentResponse = Partial<Incident> & {
   assigneeName?: string;
@@ -12,9 +13,11 @@ type IncidentResponse = Partial<Incident> & {
 
 export class IncidentService {
   private incidentRepository!: Repository<Incident>;
+  private indicatorLinkRepository!: Repository<IndicatorLink>;
 
   async init() {
     this.incidentRepository = await getRepository(Incident);
+    this.indicatorLinkRepository = await getRepository(IndicatorLink);
   }
 
   async findAll(
@@ -22,17 +25,16 @@ export class IncidentService {
     timeFrame: TimeFrames,
   ): Promise<ServiceResponse<IncidentResponse[] | null>> {
     const timeFrameQuery = getTimeFrameQuery(timeFrame, 'incident', 'openedAt');
-    console.log('timeFrame', timeFrameQuery);
+
     try {
       const incidents = await this.incidentRepository
         .createQueryBuilder('incident')
         .leftJoinAndSelect('incident.assignee', 'user')
-        .select(['incident', 'user.username'])
+        .select(['incident', 'user.username', 'user.userId'])
         .where('incident.companyId = :companyId', { companyId })
         .andWhere(timeFrameQuery)
         .getMany();
 
-      console.log(incidents);
       if (!incidents || incidents.length === 0) {
         return ServiceResponse.failure(
           'No incidents found',
@@ -138,6 +140,42 @@ export class IncidentService {
       logger.error(errorMessage);
       return ServiceResponse.failure(
         'An error occurred while updating incident.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getIoc(
+    caseIds: string[],
+    timeFrame: string,
+  ): Promise<ServiceResponse<IndicatorLink[] | null>> {
+    try {
+      const alias = 'indicator_list';
+      const queryBuilder = this.indicatorLinkRepository
+        .createQueryBuilder(alias)
+        .where(`${alias}.case_id IN (:...caseIds)`, { caseIds });
+
+      const timeCondition = getTimeFrameQuery(
+        timeFrame as TimeFrames,
+        alias,
+        'createdAt',
+      );
+      if (timeCondition !== '1=1') {
+        queryBuilder.andWhere(timeCondition);
+      }
+
+      const links = await queryBuilder.getMany();
+
+      return ServiceResponse.success<IndicatorLink[]>(
+        'Found infected assets',
+        links,
+      );
+    } catch (ex) {
+      const errorMessage = `Error finding infected assets: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while finding infected asset.',
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
