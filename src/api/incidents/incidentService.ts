@@ -1,4 +1,4 @@
-import type { Repository } from 'typeorm';
+import { In, type Repository } from 'typeorm';
 import { StatusCodes } from 'http-status-codes';
 import { Incident } from '@/entities/Incident';
 import { ServiceResponse } from '@/common/models/serviceResponse';
@@ -6,18 +6,22 @@ import { logger } from '@/server';
 import { getRepository } from '@/common/models/repository';
 import { getTimeFrameQuery, type TimeFrames } from '@/common/utils/queryHelper';
 import { IndicatorLink } from '@/entities/IndicatorLink';
+import { Indicator } from '@/entities/Indicator';
 
 type IncidentResponse = Partial<Incident> & {
   assigneeName?: string;
 };
+type IOC = IndicatorLink & Partial<Indicator>;
 
 export class IncidentService {
   private incidentRepository!: Repository<Incident>;
   private indicatorLinkRepository!: Repository<IndicatorLink>;
+  private indicatorRepository!: Repository<Indicator>;
 
   async init() {
     this.incidentRepository = await getRepository(Incident);
     this.indicatorLinkRepository = await getRepository(IndicatorLink);
+    this.indicatorRepository = await getRepository(Indicator);
   }
 
   async findAll(
@@ -105,7 +109,12 @@ export class IncidentService {
     incident: Incident,
   ): Promise<ServiceResponse<IncidentResponse | null>> {
     try {
-      const newIncident = await this.incidentRepository.save(incident);
+      const closedAt = new Date();
+      const _incident = {
+        ...incident,
+        closedAt: incident.status === 'CLOSED' ? closedAt : null,
+      };
+      const newIncident = await this.incidentRepository.save(_incident);
       return ServiceResponse.success<Incident>('Incident created', newIncident);
     } catch (ex) {
       const errorMessage = `Error creating incident: ${(ex as Error).message}`;
@@ -122,7 +131,7 @@ export class IncidentService {
     incident: Partial<Incident>,
   ): Promise<ServiceResponse<Partial<Incident> | null>> {
     try {
-      const { caseId } = incident;
+      const { caseId, status, closedAt: _closedAt } = incident;
       if (!caseId) {
         return ServiceResponse.failure(
           'Incident caseId is required',
@@ -130,7 +139,12 @@ export class IncidentService {
           StatusCodes.BAD_REQUEST,
         );
       }
-      const update = await this.incidentRepository.update(caseId, incident);
+      const closedAt = _closedAt ?? new Date();
+      const _incident = {
+        ...incident,
+        closedAt: status === 'CLOSED' ? closedAt : null,
+      };
+      const update = await this.incidentRepository.update(caseId, _incident);
       return ServiceResponse.success<Partial<Incident>>(
         'Incident updated',
         update.raw,
@@ -149,9 +163,10 @@ export class IncidentService {
   async getIoc(
     caseIds: string[],
     timeFrame: string,
-  ): Promise<ServiceResponse<IndicatorLink[] | null>> {
+  ): Promise<ServiceResponse<IOC[] | null>> {
     try {
       const alias = 'indicator_list';
+
       const queryBuilder = this.indicatorLinkRepository
         .createQueryBuilder(alias)
         .where(`${alias}.case_id IN (:...caseIds)`, { caseIds });
@@ -166,16 +181,40 @@ export class IncidentService {
       }
 
       const links = await queryBuilder.getMany();
+      const indicators = await this.indicatorRepository.find({
+        where: { iocId: In(links.map((l) => l.iocId)) },
+      });
 
-      return ServiceResponse.success<IndicatorLink[]>(
+      const ret = links.map((link) => ({
+        ...link,
+        ...(indicators.find((i) => i.iocId === link.iocId) || {}),
+      }));
+
+      return ServiceResponse.success<IOC[]>(
         'Found infected assets',
-        links,
+        ret as IOC[],
       );
     } catch (ex) {
       const errorMessage = `Error finding infected assets: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
         'An error occurred while finding infected asset.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getSLAs() {
+    try {
+      const closedIncidents = await this.incidentRepository.find({
+        where: { status: 'CLOSED' },
+      });
+    } catch (ex) {
+      const errorMessage = `Error getting sla: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while getting sla.',
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );

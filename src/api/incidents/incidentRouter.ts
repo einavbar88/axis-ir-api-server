@@ -1,5 +1,6 @@
 import express, { type Router } from 'express';
 import { incidentController } from './incidentController';
+import { authMiddleware } from '@/common/middleware/authMiddleware';
 
 export const incidentRouter: Router = express.Router();
 
@@ -8,10 +9,10 @@ incidentRouter.get(
   incidentController.getIncidents,
 );
 
-incidentRouter.get('/getById/:id', incidentController.getById);
+incidentRouter.get('/getById/:id', authMiddleware, incidentController.getById);
 
-incidentRouter.get('/getIoc', incidentController.getIoc);
+incidentRouter.get('/getIoc', authMiddleware, incidentController.getIoc);
 
-incidentRouter.post('/create', incidentController.create);
+incidentRouter.post('/create', authMiddleware, incidentController.create);
 
-incidentRouter.post('/update', incidentController.update);
+incidentRouter.post('/update', authMiddleware, incidentController.update);

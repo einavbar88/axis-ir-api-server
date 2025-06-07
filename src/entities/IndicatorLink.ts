@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
+import type { Indicator } from '@/entities/Indicator';
 
 @Entity('indicator_link')
 export class IndicatorLink {
@@ -46,4 +48,7 @@ export class IndicatorLink {
 
   @Column({ type: 'text', nullable: true })
   confidence?: string;
+
+  @JoinColumn({ name: 'ioc_id', referencedColumnName: 'iocId' })
+  indicator: Indicator;
 }
