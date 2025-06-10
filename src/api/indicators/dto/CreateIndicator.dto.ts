@@ -21,6 +21,10 @@ export class CreateIndicatorDto {
   classifiedBy?: number;
 
   @IsOptional()
+  @IsInt()
+  linkedBy?: number;
+
+  @IsOptional()
   @IsDate()
   detectedAt?: Date;
 

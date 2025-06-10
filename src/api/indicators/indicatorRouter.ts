@@ -4,7 +4,7 @@ import { authMiddleware } from '@/common/middleware/authMiddleware';
 
 export const indicatorRouter: Router = express.Router();
 
-indicatorRouter.get('/', indicatorController.getIndicators);
+indicatorRouter.get('/', authMiddleware, indicatorController.getIndicators);
 
 indicatorRouter.get('/:id', authMiddleware, indicatorController.getById);
 

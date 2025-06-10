@@ -93,14 +93,16 @@ class IndicatorService {
     indicatorDto: CreateIndicatorDto,
   ): Promise<ServiceResponse<IndicatorResponse | null>> {
     try {
+      logger.info(indicatorDto);
+
       const indicator = this.indicatorRepository.create({
         value: indicatorDto.value,
-        type: indicatorDto.type || null,
-        classification: indicatorDto.classification || null,
-        priority: indicatorDto.priority || null,
-        classifiedBy: indicatorDto.classifiedBy || null,
-        detectedAt: indicatorDto.detectedAt || null,
-        tlp: indicatorDto.tlp || null,
+        type: indicatorDto.type,
+        classification: indicatorDto.classification,
+        priority: indicatorDto.priority,
+        classifiedBy: indicatorDto.classifiedBy,
+        detectedAt: indicatorDto.detectedAt,
+        tlp: indicatorDto.tlp,
       });
 
       const savedIndicator = await this.indicatorRepository.save(indicator);
