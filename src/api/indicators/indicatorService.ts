@@ -103,6 +103,7 @@ class IndicatorService {
         classifiedBy: indicatorDto.classifiedBy,
         detectedAt: indicatorDto.detectedAt,
         tlp: indicatorDto.tlp,
+        createdAt: indicatorDto.detectedAt,
       });
 
       const savedIndicator = await this.indicatorRepository.save(indicator);
@@ -117,6 +118,7 @@ class IndicatorService {
         tlp: indicatorDto.tlp,
         attackPhase: indicatorDto.attackPhase,
         confidence: indicatorDto.confidence,
+        createdAt: indicatorDto.detectedAt,
       });
 
       await this.indicatorLinkRepository.save(link);

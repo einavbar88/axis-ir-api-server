@@ -1,4 +1,4 @@
-import type { Repository } from 'typeorm';
+import { In, type Repository } from 'typeorm';
 import { StatusCodes } from 'http-status-codes';
 import { ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
@@ -12,7 +12,9 @@ import {
   getTimeFrameQuery,
   type TimeFrames,
 } from '@/common/utils/queryHelper';
+import { Indicator } from '@/entities/Indicator';
 
+type IOC = IndicatorLink & Partial<Indicator>;
 type WithGroups = Asset & { groups: number[] };
 
 const getGroupsIds = (assigns: AssetGroupAssign[]) => {
@@ -24,12 +26,14 @@ export class AssetService {
   private assetGroupRepository!: Repository<AssetGroup>;
   private assetGroupAssignRepository!: Repository<AssetGroupAssign>;
   private indicatorLinkRepository!: Repository<IndicatorLink>;
+  private indicatorRepository!: Repository<Indicator>;
 
   async init() {
     this.assetRepository = await getRepository(Asset);
     this.assetGroupRepository = await getRepository(AssetGroup);
     this.assetGroupAssignRepository = await getRepository(AssetGroupAssign);
     this.indicatorLinkRepository = await getRepository(IndicatorLink);
+    this.indicatorRepository = await getRepository(Indicator);
   }
 
   async findByCompanyId(
@@ -291,7 +295,7 @@ export class AssetService {
   async getIoc(
     assetId: string,
     timeFrame: string,
-  ): Promise<ServiceResponse<IndicatorLink[] | null>> {
+  ): Promise<ServiceResponse<IOC[] | null>> {
     try {
       const alias = 'indicator_list';
       const queryBuilder = this.indicatorLinkRepository
@@ -309,7 +313,16 @@ export class AssetService {
 
       const links = await queryBuilder.getMany();
 
-      return ServiceResponse.success<IndicatorLink[]>('Found IOCs', links);
+      const indicators = await this.indicatorRepository.find({
+        where: { iocId: In(links.map((l) => l.iocId)) },
+      });
+
+      const ret = links.map((link) => ({
+        ...link,
+        ...(indicators.find((i) => i.iocId === link.iocId) || {}),
+      }));
+
+      return ServiceResponse.success<IOC[]>('Found IOCs', ret as IOC[]);
     } catch (ex) {
       const errorMessage = `Error finding IOCs: ${(ex as Error).message}`;
       logger.error(errorMessage);

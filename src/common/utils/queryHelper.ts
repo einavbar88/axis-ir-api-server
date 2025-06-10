@@ -19,14 +19,13 @@ export const getTimeFrameQuery = (
   switch (timeFrame) {
     case 'today': {
       const start = `${today} 00:00:00`;
-      const end = `${today} 23:59:59`;
-      return `${alias}.${field} BETWEEN '${start}' AND '${end}'`;
+      return `${alias}.${field} >= '${start}'`;
     }
     case 'last week': {
       const start = new Date(now);
       const startDate = setToMidnight(start);
       startDate.setDate(startDate.getDate() - 7);
-      return `${alias}.${field} BETWEEN '${formatDate(startDate)}' AND '${formatDate(now)}'`;
+      return `${alias}.${field} >= '${formatDate(startDate)}'`;
     }
     case 'last month': {
       const startDate = new Date(
@@ -34,7 +33,7 @@ export const getTimeFrameQuery = (
         now.getMonth() - 1,
         now.getDate(),
       ); // first day of last month
-      return `${alias}.${field} BETWEEN '${formatDate(startDate)}' AND '${formatDate(now)}'`;
+      return `${alias}.${field} >= '${formatDate(startDate)}'`;
     }
     case 'last year': {
       const startDate = new Date(
@@ -42,7 +41,7 @@ export const getTimeFrameQuery = (
         now.getMonth(),
         now.getDate(),
       );
-      return `${alias}.${field} BETWEEN '${formatDate(startDate)}' AND '${formatDate(now)}'`;
+      return `${alias}.${field} >= '${formatDate(startDate)}'`;
     }
     default:
       return '1=1';
