@@ -49,6 +49,13 @@ class IncidentController {
     );
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public generateReport = async (req: Request, res: Response) => {
+    const serviceResponse = await incidentService.generateReports(
+      req.params.id,
+    );
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const incidentController = new IncidentController();

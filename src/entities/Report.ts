@@ -38,7 +38,7 @@ export class Report {
     nullable: true,
     length: 255,
   })
-  reportFileS3Path: string | null;
+  s3Path: string | null;
 
   @Column('datetime', { name: 'generated_at', nullable: true })
   generatedAt: Date | null;

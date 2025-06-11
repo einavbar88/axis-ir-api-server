@@ -7,9 +7,11 @@ import { getRepository } from '@/common/models/repository';
 import { getTimeFrameQuery, type TimeFrames } from '@/common/utils/queryHelper';
 import { IndicatorLink } from '@/entities/IndicatorLink';
 import { Indicator } from '@/entities/Indicator';
+import { Report } from '@/entities/Report';
 
 type IncidentResponse = Partial<Incident> & {
   assigneeName?: string;
+  reports?: Report[];
 };
 type IOC = IndicatorLink & Partial<Indicator>;
 
@@ -17,11 +19,13 @@ export class IncidentService {
   private incidentRepository!: Repository<Incident>;
   private indicatorLinkRepository!: Repository<IndicatorLink>;
   private indicatorRepository!: Repository<Indicator>;
+  private reportRepository!: Repository<Report>;
 
   async init() {
     this.incidentRepository = await getRepository(Incident);
     this.indicatorLinkRepository = await getRepository(IndicatorLink);
     this.indicatorRepository = await getRepository(Indicator);
+    this.reportRepository = await getRepository(Report);
   }
 
   async findAll(
@@ -89,10 +93,15 @@ export class IncidentService {
         );
       }
 
+      const reports = await this.reportRepository.find({
+        where: { caseId: id },
+      });
+
       return ServiceResponse.success<IncidentResponse>('Incident found', {
         ...incident,
         assignee: incident.assignee?.userId as any,
         assigneeName: incident.assignee?.username,
+        reports,
       });
     } catch (ex) {
       const errorMessage = `Error finding incident with id ${id}:, ${(ex as Error).message}`;
@@ -199,6 +208,28 @@ export class IncidentService {
       logger.error(errorMessage);
       return ServiceResponse.failure(
         'An error occurred while finding infected asset.',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async generateReports(id: string) {
+    try {
+      const reportServer = 'http://localhost:8000/GenerateReport';
+      await fetch(reportServer, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ case_id: id }),
+      });
+      return ServiceResponse.success('Generating report', null);
+    } catch (ex) {
+      const errorMessage = `Error generating report: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        'An error occurred while generating report.',
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
